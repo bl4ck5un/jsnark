@@ -30,11 +30,11 @@ public class BabyJubjubMulCircuitGenerator extends CircuitGenerator {
 
     @Override
     public void generateSampleInput(CircuitEvaluator circuitEvaluator) {
-        // test vector taken from
-        // https://github.com/barryWhiteHat/baby_jubjub_ecc/blob/master/tests/test_mul.py
-        circuitEvaluator.setWireValue(x, new BigInteger("17777552123799933955779906779655732241715742912184938656739573121738514868268"));
-        circuitEvaluator.setWireValue(y, new BigInteger("2626589144620713026669568689430873010625803728049924121243784502389097019475"));
-        circuitEvaluator.setWireValue(s, new BigInteger("14474011154664524427946373126085988481658748083205070504932198000989141204993"));
+        // test vector taken from (Test 6)
+        // https://github.com/ethereum/EIPs/blob/41569d75e42da2046cb18fdca79609e18968af47/eip-draft_babyjubjub.md
+        circuitEvaluator.setWireValue(x, new BigInteger("5299619240641551281634865583518297030282874472190772894086521144482721001553"));
+        circuitEvaluator.setWireValue(y, new BigInteger("16950150798460657717958625567821834550301663161624707787222815936182638968203"));
+        circuitEvaluator.setWireValue(s, new BigInteger("2736030358979909402780800718157159386076813972158567259200215660948447373041"));
     }
 
     public static void main(String[] args) throws Exception {
@@ -55,7 +55,7 @@ public class BabyJubjubMulCircuitGenerator extends CircuitGenerator {
             System.out.println(evaluator.getWireValue(out));
         }
         System.out.println("Expected: **********************************************************************");
-        System.out.println(new BigInteger("10164343493729775566033630529262184691025040849344456090975503683071363199598"));
-        System.out.println(new BigInteger("1442322238505690604101225876236968359816131961581303072165222721153965839907"));
+        System.out.println(new BigInteger("0"));
+        System.out.println(new BigInteger("1"));
     }
 }

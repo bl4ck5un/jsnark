@@ -40,7 +40,7 @@ public class AdditionGadget extends Gadget {
     public AdditionGadget(Wire x1, Wire y1, Wire x2, Wire y2, String... desc) {
         super(desc);
 
-        // make sure jsnark is configured to use the same field prime (it should be)
+        // make sure jsnark uses the same field prime as Babyjubjub
         assert Config.FIELD_PRIME.equals(CURVE_FIELD_PRIME);
 
         // set the constants
