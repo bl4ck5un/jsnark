@@ -42,7 +42,7 @@ public class FixedBaseMulGadget extends Gadget {
         // a simple double-and-add algorithm
         // https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication
         for (int i = 0; i < bitwidth; i++) {
-            // compute addition
+            // add P(x,y) (the fixed base) and Q
             Wire[] add_result = new AddConstantGadget(x, y, Q[0], Q[1], "unconditional add").getOutputWires();
 
             // only update Q if s[i] == 1
