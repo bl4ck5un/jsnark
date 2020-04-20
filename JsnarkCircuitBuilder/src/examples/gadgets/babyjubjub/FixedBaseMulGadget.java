@@ -4,37 +4,38 @@ import circuit.operations.Gadget;
 import circuit.structure.Wire;
 import circuit.structure.WireArray;
 
+import java.math.BigInteger;
+
 /**
  * this implements a simple double-and-add scalar multiplication algorithm
- * input (P=(x,y), s)
- * output s*P
+ * with a fixed base
+ * <p>
+ * Input s (scalar)
+ * output s*P (an EC point)
  */
-public class ScalarMulGadget extends Gadget {
-    // P = (x, y)
-    private final Wire x, y;
-
+public class FixedBaseMulGadget extends Gadget {
     // scalar (as a bit array)
     private final WireArray s;
-
+    private final int bitwidth = 256;
+    // P = (x, y)
+    private BigInteger x, y;
     // output wires (x, y)
     private Wire[] output;
 
-    private final int bitwidth = 256;
-
-    public ScalarMulGadget(Wire x, Wire y, Wire s, String... desc) {
+    public FixedBaseMulGadget(BigInteger x, BigInteger y, Wire s, String... desc) {
         super(desc);
         this.x = x;
         this.y = y;
 
         // store the scalar in binary form
         this.s = s.getBitWires(bitwidth, "split S as bits");
+
         buildCircuit();
     }
 
     private void buildCircuit() {
         output = new Wire[2];
 
-        Wire[] N = new Wire[]{x, y};
         // initialized to the identity point (0, 1)
         Wire[] Q = new Wire[]{generator.getZeroWire(), generator.getOneWire()};
 
@@ -42,7 +43,7 @@ public class ScalarMulGadget extends Gadget {
         // https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication
         for (int i = 0; i < bitwidth; i++) {
             // compute addition
-            Wire[] add_result = new AddGadget(N[0], N[1], Q[0], Q[1], "unconditional add").getOutputWires();
+            Wire[] add_result = new AddConstantGadget(x, y, Q[0], Q[1], "unconditional add").getOutputWires();
 
             // only update Q if s[i] == 1
             // namely Q = Q if s[i] == 0 else add_result
@@ -64,8 +65,10 @@ public class ScalarMulGadget extends Gadget {
                     Q_left[1].add(Q_right[1])
             };
 
-            // always double
-            N = new AddGadget(N[0], N[1], N[0], N[1], "double").getOutputWires();
+            // always double N
+            BigInteger[] doubled = BabyJubjubCurve.doubleConstantPoint(x, y);
+            this.x = doubled[0];
+            this.y = doubled[1];
         }
 
         output = Q;

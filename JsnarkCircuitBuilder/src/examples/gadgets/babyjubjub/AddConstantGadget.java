@@ -4,20 +4,19 @@ import circuit.config.Config;
 import circuit.operations.Gadget;
 import circuit.structure.Wire;
 import examples.gadgets.math.FieldDivisionGadget;
-import util.BigIntStorage;
 
 import java.math.BigInteger;
 
 /**
  * this implements the addition operation in BabyJubjub
- * https://github.com/ethereum/EIPs/blob/41569d75e42da2046cb18fdca79609e18968af47/eip-draft_babyjubjub.md
- *
+ * with regard to a fixed based
+ * <p>
+ * Input P
+ * Output P + P_fixed
+ * <p>
+ * where P_fixed is a constant point
  */
-public class AdditionGadget extends Gadget {
-    private static final BigInteger CURVE_FIELD_PRIME = new BigInteger("21888242871839275222246405745257275088548364400416034343698204186575808495617", 16);
-    private static final Integer CURVE_PARAM_A = 168700;
-    private static final Integer CURVE_PARAM_D = 168696;
-
+public class AddConstantGadget extends Gadget {
     /**
      * curve constants
      * a = 168700
@@ -26,32 +25,33 @@ public class AdditionGadget extends Gadget {
     private final Wire a;
     private final Wire d;
 
-    /**
-     * first point (x1, y1)
-     * second point (x2, y2)
-     */
-    private final Wire x1, y1, x2, y2;
+    // P_fixed
+    private final Wire fixed_x, fixed_y;
+
+    // input
+    private final Wire x, y;
 
     /**
      * output of circuit (x, y)
      */
     private Wire[] output;
 
-    public AdditionGadget(Wire x1, Wire y1, Wire x2, Wire y2, String... desc) {
+    public AddConstantGadget(BigInteger fixed_x, BigInteger fixed_y, Wire x, Wire y, String... desc) {
         super(desc);
 
         // make sure jsnark uses the same field prime as Babyjubjub
-        assert Config.FIELD_PRIME.equals(CURVE_FIELD_PRIME);
+        assert Config.FIELD_PRIME.equals(BabyJubjubCurve.FIELD_PRIME);
 
         // set the constants
-        this.a = generator.createConstantWire(CURVE_PARAM_A);
-        this.d = generator.createConstantWire(CURVE_PARAM_D);
+        this.a = generator.createConstantWire(BabyJubjubCurve.PARAM_A);
+        this.d = generator.createConstantWire(BabyJubjubCurve.PARAM_D);
+
+        this.fixed_x = generator.createConstantWire(fixed_x);
+        this.fixed_y = generator.createConstantWire(fixed_y);
 
         // connect the input
-        this.x1 = x1;
-        this.y1 = y1;
-        this.x2 = x2;
-        this.y2 = y2;
+        this.x = x;
+        this.y = y;
 
         // build the circuit
         buildCircuit();
@@ -60,21 +60,20 @@ public class AdditionGadget extends Gadget {
     /**
      * Implements the addition
      * Specification here: https://github.com/ethereum/EIPs/blob/41569d75e42da2046cb18fdca79609e18968af47/eip-draft_babyjubjub.md
-     *
-     * x3 = (x1*y2 + y1*x2)/(1 + d*x1*x2*y1*y2)
-     * y3 = (y1*y2 - a*x1*x2)/(1 - d*x1*x2*y1*y2)
-     *
+     * <p>
+     * x3 = (x1*fixed_y + y1*fixed_x)/(1 + d*x1*fixed_x*y1*fixed_y)
+     * y3 = (y1*fixed_y - a*x1*fixed_x)/(1 - d*x1*fixed_x*y1*fixed_y)
      */
     private void buildCircuit() {
         output = new Wire[2];
 
-        Wire x1x2 = x1.mul(x2);
-        Wire y1y2 = y1.mul(y2);
+        Wire x1x2 = this.x.mul(this.fixed_x);
+        Wire y1y2 = this.y.mul(this.fixed_y);
 
         Wire d_prod = this.d.mul(x1x2).mul(y1y2);
 
-        Wire x1y2 = x1.mul(y2);
-        Wire y1x2 = x2.mul(y1);
+        Wire x1y2 = this.x.mul(this.fixed_y);
+        Wire y1x2 = this.fixed_x.mul(this.y);
 
         // x3 = (x1*y2 + y1*x2)/(1 + d*x1*x2*y1*y2)
         Wire x3_num = x1y2.add(y1x2, "x3 num");

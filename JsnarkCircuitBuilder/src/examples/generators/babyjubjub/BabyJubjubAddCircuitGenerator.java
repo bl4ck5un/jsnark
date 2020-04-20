@@ -3,7 +3,7 @@ package examples.generators.babyjubjub;
 import circuit.eval.CircuitEvaluator;
 import circuit.structure.CircuitGenerator;
 import circuit.structure.Wire;
-import examples.gadgets.babyjubjub.AdditionGadget;
+import examples.gadgets.babyjubjub.AddGadget;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ public class BabyJubjubAddCircuitGenerator extends CircuitGenerator {
         this.x2 = createInputWire("y1");
         this.y2 = createInputWire("y2");
 
-        AdditionGadget addGadget = new AdditionGadget(x1, y1, x2, y2);
+        AddGadget addGadget = new AddGadget(x1, y1, x2, y2);
         Wire[] result = addGadget.getOutputWires();
 
         makeOutputArray(result, "output of BabyJubJub addition");
