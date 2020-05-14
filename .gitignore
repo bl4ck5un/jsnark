@@ -10,3 +10,5 @@ bin
 *.arith
 !JsnarkCirctuitBuilder/auction_10.arith
 *.in
+
+.DS_Store
